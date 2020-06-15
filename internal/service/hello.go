@@ -10,7 +10,7 @@ type HelloService struct{}
 
 func (srv *HelloService) Hello(context.Context, *proto.HelloRequest) (*proto.HelloResponse, error) {
 	resp := proto.HelloResponse{
-		FullName: "stone",
+		FullName: "Si Dong yu",
 	}
 	return &resp, nil
 }
