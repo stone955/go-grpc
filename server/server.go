@@ -1,15 +1,14 @@
 package main
 
 import (
-	"github/stone955/go-grpc/proto"
-	"github/stone955/go-grpc/service"
+	"log"
+	"net"
 	"os"
 	"os/signal"
 	"sync"
 
-	"log"
-	"net"
-
+	"github/stone955/go-grpc/internal/service"
+	"github/stone955/go-grpc/proto"
 	"google.golang.org/grpc"
 )
 
