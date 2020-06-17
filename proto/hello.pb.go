@@ -131,12 +131,15 @@ var file_hello_proto_rawDesc = []byte{
 	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
 	0x65, 0x22, 0x2b, 0x0a, 0x0d, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
 	0x73, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x66, 0x75, 0x6c, 0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x66, 0x75, 0x6c, 0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x32, 0x36,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x66, 0x75, 0x6c, 0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x32, 0x68,
 	0x0a, 0x0c, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x26,
 	0x0a, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x12, 0x0d, 0x2e, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x30, 0x0a, 0x0b, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x53,
+	0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x0d, 0x2e, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x28, 0x01, 0x30, 0x01, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x3b, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -158,9 +161,11 @@ var file_hello_proto_goTypes = []interface{}{
 }
 var file_hello_proto_depIdxs = []int32{
 	0, // 0: HelloService.Hello:input_type -> HelloRequest
-	1, // 1: HelloService.Hello:output_type -> HelloResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	0, // 1: HelloService.HelloStream:input_type -> HelloRequest
+	1, // 2: HelloService.Hello:output_type -> HelloResponse
+	1, // 3: HelloService.HelloStream:output_type -> HelloResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -229,7 +234,10 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type HelloServiceClient interface {
+	// 单向流
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
+	// 双向流
+	HelloStream(ctx context.Context, opts ...grpc.CallOption) (HelloService_HelloStreamClient, error)
 }
 
 type helloServiceClient struct {
@@ -249,9 +257,43 @@ func (c *helloServiceClient) Hello(ctx context.Context, in *HelloRequest, opts .
 	return out, nil
 }
 
+func (c *helloServiceClient) HelloStream(ctx context.Context, opts ...grpc.CallOption) (HelloService_HelloStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_HelloService_serviceDesc.Streams[0], "/HelloService/HelloStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &helloServiceHelloStreamClient{stream}
+	return x, nil
+}
+
+type HelloService_HelloStreamClient interface {
+	Send(*HelloRequest) error
+	Recv() (*HelloResponse, error)
+	grpc.ClientStream
+}
+
+type helloServiceHelloStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *helloServiceHelloStreamClient) Send(m *HelloRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *helloServiceHelloStreamClient) Recv() (*HelloResponse, error) {
+	m := new(HelloResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // HelloServiceServer is the server API for HelloService service.
 type HelloServiceServer interface {
+	// 单向流
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
+	// 双向流
+	HelloStream(HelloService_HelloStreamServer) error
 }
 
 // UnimplementedHelloServiceServer can be embedded to have forward compatible implementations.
@@ -260,6 +302,9 @@ type UnimplementedHelloServiceServer struct {
 
 func (*UnimplementedHelloServiceServer) Hello(context.Context, *HelloRequest) (*HelloResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Hello not implemented")
+}
+func (*UnimplementedHelloServiceServer) HelloStream(HelloService_HelloStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method HelloStream not implemented")
 }
 
 func RegisterHelloServiceServer(s *grpc.Server, srv HelloServiceServer) {
@@ -284,6 +329,32 @@ func _HelloService_Hello_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HelloService_HelloStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HelloServiceServer).HelloStream(&helloServiceHelloStreamServer{stream})
+}
+
+type HelloService_HelloStreamServer interface {
+	Send(*HelloResponse) error
+	Recv() (*HelloRequest, error)
+	grpc.ServerStream
+}
+
+type helloServiceHelloStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *helloServiceHelloStreamServer) Send(m *HelloResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *helloServiceHelloStreamServer) Recv() (*HelloRequest, error) {
+	m := new(HelloRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 var _HelloService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "HelloService",
 	HandlerType: (*HelloServiceServer)(nil),
@@ -293,6 +364,13 @@ var _HelloService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _HelloService_Hello_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "HelloStream",
+			Handler:       _HelloService_HelloStream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "hello.proto",
 }

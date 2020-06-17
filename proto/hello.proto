@@ -11,5 +11,9 @@ message HelloResponse{
 }
 
 service HelloService{
-  rpc Hello(HelloRequest)returns(HelloResponse);
+  // 单向流
+  rpc Hello(HelloRequest) returns (HelloResponse);
+
+  // 双向流
+  rpc HelloStream(stream HelloRequest) returns (stream HelloResponse);
 }
