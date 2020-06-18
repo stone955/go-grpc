@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github/stone955/go-grpc/internal/auth"
 	"google.golang.org/grpc/credentials"
 	"log"
 	"net"
@@ -21,8 +22,15 @@ func main() {
 
 	// 创建 grpc 服务
 	s := grpc.NewServer(grpc.Creds(cred))
+
 	// 注册服务
-	proto.RegisterHelloServiceServer(s, &service.HelloService{})
+	proto.RegisterHelloServiceServer(s, &service.HelloService{
+		// 加入身份验证
+		Auth: &auth.Authentication{
+			User:     "stone",
+			Password: "123456",
+		},
+	})
 
 	//  监听退出信号，优雅关闭
 	var wg sync.WaitGroup

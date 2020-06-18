@@ -2,16 +2,22 @@ package service
 
 import (
 	"context"
+	"github/stone955/go-grpc/internal/auth"
 	"io"
 
 	"github/stone955/go-grpc/proto"
 )
 
-type HelloService struct{}
+type HelloService struct {
+	Auth *auth.Authentication
+}
 
 func (srv *HelloService) Hello(ctx context.Context, request *proto.HelloRequest) (*proto.HelloResponse, error) {
+	if err := srv.Auth.Auth(ctx); err != nil {
+		return nil, err
+	}
 	resp := proto.HelloResponse{
-		FullName: "Si Dong yu",
+		FullName: request.Name + " Si",
 	}
 	return &resp, nil
 }
