@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github/stone955/go-grpc/internal/auth"
 	"google.golang.org/grpc/credentials"
 	"log"
@@ -21,7 +22,10 @@ func main() {
 	}
 
 	// 创建 grpc 服务
-	s := grpc.NewServer(grpc.Creds(cred))
+	//s := grpc.NewServer(grpc.Creds(cred))
+
+	// 添加截取器
+	s := grpc.NewServer(grpc.Creds(cred), grpc.UnaryInterceptor(filter))
 
 	// 注册服务
 	proto.RegisterHelloServiceServer(s, &service.HelloService{
@@ -59,4 +63,9 @@ func main() {
 	wg.Wait()
 
 	log.Println("server graceful stopped")
+}
+
+func filter(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	log.Printf("filter  server= %v, fullmethod= %v\n", info.Server, info.FullMethod)
+	return handler(ctx, req)
 }
