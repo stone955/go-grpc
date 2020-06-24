@@ -25,7 +25,7 @@ func main() {
 	//s := grpc.NewServer(grpc.Creds(cred))
 
 	// 添加截取器
-	s := grpc.NewServer(grpc.Creds(cred), grpc.UnaryInterceptor(filter))
+	s := grpc.NewServer(grpc.Creds(cred), grpc.UnaryInterceptor(unaryFilter), grpc.StreamInterceptor(streamFilter))
 
 	// 注册服务
 	proto.RegisterHelloServiceServer(s, &service.HelloService{
@@ -65,7 +65,14 @@ func main() {
 	log.Println("server graceful stopped")
 }
 
-func filter(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-	log.Printf("filter  server= %v, fullmethod= %v\n", info.Server, info.FullMethod)
+// 普通方法拦截器
+func unaryFilter(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	log.Printf("unary filter  server= %v, fullmethod= %v\n", info.Server, info.FullMethod)
 	return handler(ctx, req)
+}
+
+// 流失方法拦截器
+func streamFilter(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	log.Printf("stream filter  server= %v, fullmethod= %v\n", info.IsServerStream, info.FullMethod)
+	return handler(srv, ss)
 }
